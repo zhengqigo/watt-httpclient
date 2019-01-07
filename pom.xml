@@ -22,6 +22,7 @@
         <nexus.host>106.14.212.70:8081</nexus.host>
 
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -58,6 +59,22 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven-source-plugin.version}</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
