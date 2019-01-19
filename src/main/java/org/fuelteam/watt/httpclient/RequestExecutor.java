@@ -46,8 +46,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         return this;
     }
 
-    public RequestExecutor<T> on(String uri, Map<String, String> params, Map<String, String> headers,
-            String body) {
+    public RequestExecutor<T> on(String uri, Map<String, String> params, Map<String, String> headers, String body) {
         String url = uri;
         if (!isNull(params)) url += buildUrlParams(params);
         t.setURI(URI.create(url));
@@ -63,7 +62,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
         return this;
     }
-    
+
     public String string(Cookie[] cookies) throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
