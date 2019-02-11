@@ -2,6 +2,7 @@ package org.fuelteam.watt.httpclient;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.http.Consts;
@@ -40,9 +41,17 @@ public class RequestExecutor<T extends HttpRequestBase> {
             }
         }
         if (fields == null || fields.isEmpty()) return this;
+        
+        Object fieldValue = null;
+        Iterator<Map.Entry<String, Object>> entries = fields.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry<String, Object> entry = entries.next();
+            fieldValue = entry.getValue();
+        }
         if (t instanceof HttpPost) {
             HttpPost post = (HttpPost) t;
-            post.setEntity(new StringEntity(JSON.toJSONString(fields), Consts.UTF_8));
+            System.out.println(JSON.toJSONString(fieldValue));
+            post.setEntity(new StringEntity(JSON.toJSONString(fieldValue), Consts.UTF_8));
         }
         return this;
     }
