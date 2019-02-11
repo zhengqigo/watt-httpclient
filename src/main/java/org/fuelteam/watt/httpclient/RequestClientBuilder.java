@@ -16,6 +16,7 @@ import javax.net.ssl.SSLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponseInterceptor;
@@ -41,6 +42,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
@@ -102,8 +104,8 @@ public class RequestClientBuilder {
         return this;
     }
 
-    public CloseableHttpClient get(Cookie[] cookies) {
-        if (!prepared.get()) prepare(cookies);
+    public CloseableHttpClient get(Cookie[] cookies, HttpHost proxy) {
+        if (!prepared.get()) prepare(cookies, proxy);
         return closeableHttpClient;
     }
 
@@ -112,7 +114,7 @@ public class RequestClientBuilder {
         this.userAgent = userAgent;
     }
 
-    private synchronized void prepare(Cookie[] cookies) {
+    private synchronized void prepare(Cookie[] cookies, HttpHost proxy) {
         if (prepared.get()) return;
 
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
@@ -122,28 +124,27 @@ public class RequestClientBuilder {
         connectionManager.setMaxTotal(maxTotal);
         connectionManager.setDefaultMaxPerRoute(maxPerRoute);
 
-        SocketConfig socketConfig = SocketConfig.copy(SocketConfig.DEFAULT).setSoKeepAlive(true).setTcpNoDelay(true)
-                .build();
+        SocketConfig socketConfig = SocketConfig.copy(SocketConfig.DEFAULT).setSoKeepAlive(true).setTcpNoDelay(true).build();
         connectionManager.setDefaultSocketConfig(socketConfig);
 
         idleConnectionMonitor = new IdleConnectionMonitor(connectionManager);
         idleConnectionMonitor.setDaemon(true);
         idleConnectionMonitor.start();
 
-        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(soTimeout)
-                .setConnectTimeout(connectionTimeout).setConnectionRequestTimeout(connectionRequestTimeout).build();
-
-        CookieStore cookieStore = new BasicCookieStore();
-        if (cookies != null && cookies.length > 0) {
-            for (Cookie cookie : cookies) {
-                cookieStore.addCookie(cookie);
-            }
-        }
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(soTimeout).setConnectTimeout(connectionTimeout)
+                .setConnectionRequestTimeout(connectionRequestTimeout).build();
 
         HttpClientBuilder httpClientBuilder = HttpClients.custom().setConnectionManager(connectionManager)
                 .setConnectionManagerShared(true).setSSLSocketFactory(buildSSLConnectionSocketFactory())
-                .setDefaultRequestConfig(requestConfig).setRetryHandler(retryHandler(retryTimes))
-                .setDefaultCookieStore(cookieStore);
+                .setDefaultRequestConfig(requestConfig).setRetryHandler(retryHandler(retryTimes));
+        if (cookies != null && cookies.length > 0) {
+            CookieStore cookieStore = new BasicCookieStore();
+            for (Cookie cookie : cookies) {
+                cookieStore.addCookie(cookie);
+            }
+            httpClientBuilder.setDefaultCookieStore(cookieStore);
+        }
+        if (proxy != null) httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
 
         useGzip(httpClientBuilder);
 

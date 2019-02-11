@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Map;
 
 import org.apache.http.Consts;
+import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -63,8 +64,8 @@ public class RequestExecutor<T extends HttpRequestBase> {
         return this;
     }
 
-    public String string(Cookie[] cookies) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies).execute(t)) {
+    public String string(Cookie[] cookies, HttpHost proxy) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies, proxy).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
@@ -72,15 +73,15 @@ public class RequestExecutor<T extends HttpRequestBase> {
     }
 
     public String string() throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null).execute(t)) {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null, null).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
         }
     }
 
-    public InputStream stream(Cookie[] cookies) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies).execute(t)) {
+    public InputStream stream(Cookie[] cookies, HttpHost proxy) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies, proxy).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
@@ -88,7 +89,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
     }
 
     public InputStream stream() throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null).execute(t)) {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null, null).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
