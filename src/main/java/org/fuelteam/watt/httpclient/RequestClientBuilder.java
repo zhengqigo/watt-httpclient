@@ -42,7 +42,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
@@ -81,31 +80,53 @@ public class RequestClientBuilder {
     // 持有client对象,仅初始化一次,避免多service实例的时候造成重复初始化的问题
     private CloseableHttpClient closeableHttpClient;
 
+    private HttpHost httpHost;
+
     private CredentialsProvider credentialsProvider;
+    
+    private CookieStore cookieStore;
 
     private RequestClientBuilder() {/* nothing */}
 
     public static RequestClientBuilder build() {
-        return RequestClientBuilder.SingletonHolder.INSTANCE;
+        return RequestClientBuilder.Holder.INSTANCE;
     }
 
     // 单例模式，持有唯一的CloseableHttpClient，首次调用创建
-    private static class SingletonHolder {
+    private static class Holder {
         private static final RequestClientBuilder INSTANCE = new RequestClientBuilder();
     }
 
-    public RequestClientBuilder proxy(String host, int port, String username, String passwd) {
-        if (StringUtils.isNotBlank(host) && StringUtils.isNotBlank(username)) {
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            AuthScope authScope = new AuthScope(host, port);
-            credentialsProvider.setCredentials(authScope, new UsernamePasswordCredentials(username, passwd));
-            this.credentialsProvider = credentialsProvider;
+    public static RequestClientBuilder credentials(String host, int port, String protocol, String username, String passwd) {
+        proxy(host, port, protocol);
+        if (username == null || StringUtils.isBlank(username)) return RequestClientBuilder.Holder.INSTANCE;
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        AuthScope authScope = new AuthScope(RequestClientBuilder.Holder.INSTANCE.httpHost);
+        credentialsProvider.setCredentials(authScope, new UsernamePasswordCredentials(username, passwd));
+        RequestClientBuilder.Holder.INSTANCE.credentialsProvider = credentialsProvider;
+        return RequestClientBuilder.Holder.INSTANCE;
+    }
+    
+    private static RequestClientBuilder proxy(String host, int port, String protocol) {
+        if (host == null || StringUtils.isBlank(host)) return RequestClientBuilder.Holder.INSTANCE;
+        if (port <= 0) return RequestClientBuilder.Holder.INSTANCE;
+        if (protocol == null || StringUtils.isBlank(protocol)) protocol = "http";
+        HttpHost httpHost = new HttpHost(host, port, protocol);
+        RequestClientBuilder.Holder.INSTANCE.httpHost = httpHost;
+        return RequestClientBuilder.Holder.INSTANCE;
+    }
+    
+    private void setCookies(Cookie[] cookies) {
+        if (cookies == null || cookies.length <= 0) return;
+        CookieStore cookieStore = new BasicCookieStore();
+        for (Cookie cookie : cookies) {
+            cookieStore.addCookie(cookie);
         }
-        return this;
+        this.cookieStore = cookieStore;
     }
 
-    public CloseableHttpClient get(Cookie[] cookies, HttpHost proxy) {
-        if (!prepared.get()) prepare(cookies, proxy);
+    public CloseableHttpClient get(Cookie[] cookies) {
+        if (!prepared.get()) prepare(cookies);
         return closeableHttpClient;
     }
 
@@ -114,7 +135,7 @@ public class RequestClientBuilder {
         this.userAgent = userAgent;
     }
 
-    private synchronized void prepare(Cookie[] cookies, HttpHost proxy) {
+    private synchronized void prepare(Cookie[] cookies) {
         if (prepared.get()) return;
 
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
@@ -137,19 +158,14 @@ public class RequestClientBuilder {
         HttpClientBuilder httpClientBuilder = HttpClients.custom().setConnectionManager(connectionManager)
                 .setConnectionManagerShared(true).setSSLSocketFactory(buildSSLConnectionSocketFactory())
                 .setDefaultRequestConfig(requestConfig).setRetryHandler(retryHandler(retryTimes));
-        if (cookies != null && cookies.length > 0) {
-            CookieStore cookieStore = new BasicCookieStore();
-            for (Cookie cookie : cookies) {
-                cookieStore.addCookie(cookie);
-            }
-            httpClientBuilder.setDefaultCookieStore(cookieStore);
-        }
-        if (proxy != null) httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
-
-        useGzip(httpClientBuilder);
-
+        
+        setCookies(cookies);
+        if (cookieStore != null) httpClientBuilder.setDefaultCookieStore(cookieStore);
+        if (httpHost != null) httpClientBuilder.setProxy(httpHost);
         if (credentialsProvider != null) httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
         if (StringUtils.isNotBlank(userAgent)) httpClientBuilder.setUserAgent(userAgent);
+
+        useGzip(httpClientBuilder);
 
         closeableHttpClient = httpClientBuilder.setConnectionManagerShared(true).build();
         prepared.set(true);

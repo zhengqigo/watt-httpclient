@@ -2,11 +2,9 @@ package org.fuelteam.watt.httpclient;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.http.Consts;
-import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -41,17 +39,9 @@ public class RequestExecutor<T extends HttpRequestBase> {
             }
         }
         if (fields == null || fields.isEmpty()) return this;
-        
-        Object fieldValue = null;
-        Iterator<Map.Entry<String, Object>> entries = fields.entrySet().iterator();
-        while (entries.hasNext()) {
-            Map.Entry<String, Object> entry = entries.next();
-            fieldValue = entry.getValue();
-        }
         if (t instanceof HttpPost) {
             HttpPost post = (HttpPost) t;
-            System.out.println(JSON.toJSONString(fieldValue));
-            post.setEntity(new StringEntity(JSON.toJSONString(fieldValue), Consts.UTF_8));
+            post.setEntity(new StringEntity(JSON.toJSONString(fields), Consts.UTF_8));
         }
         return this;
     }
@@ -73,8 +63,32 @@ public class RequestExecutor<T extends HttpRequestBase> {
         return this;
     }
 
-    public String string(Cookie[] cookies, HttpHost proxy) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies, proxy).execute(t)) {
+    public String string(Cookie[] cookies, String host, int port, String protocol, String username, String passwd) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(cookies).execute(t)) {
+            return Utf8ResponseHandler.INSTANCE.handleResponse(response);
+        } finally {
+            t.releaseConnection();
+        }
+    }
+    
+    public String string(String host, int port, String protocol, String username, String passwd) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(null).execute(t)) {
+            return Utf8ResponseHandler.INSTANCE.handleResponse(response);
+        } finally {
+            t.releaseConnection();
+        }
+    }
+    
+    public String string(String host, int port, String protocol) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, null, null).get(null).execute(t)) {
+            return Utf8ResponseHandler.INSTANCE.handleResponse(response);
+        } finally {
+            t.releaseConnection();
+        }
+    }
+    
+    public String string(Cookie[] cookies) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
@@ -82,23 +96,39 @@ public class RequestExecutor<T extends HttpRequestBase> {
     }
 
     public String string() throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null, null).execute(t)) {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
         }
     }
 
-    public InputStream stream(Cookie[] cookies, HttpHost proxy) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies, proxy).execute(t)) {
+    public InputStream stream(Cookie[] cookies, String host, int port, String protocol, String username, String passwd) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(cookies).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
         }
     }
 
+    public InputStream stream(String host, int port, String protocol, String username, String passwd) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(null).execute(t)) {
+            return StreamResponseHandler.INSTANCE.handleResponse(response);
+        } finally {
+            t.releaseConnection();
+        }
+    }
+    
+    public InputStream stream(Cookie[] cookies) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies).execute(t)) {
+            return StreamResponseHandler.INSTANCE.handleResponse(response);
+        } finally {
+            t.releaseConnection();
+        }
+    }
+    
     public InputStream stream() throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null, null).execute(t)) {
+        try (CloseableHttpResponse response = RequestClientBuilder.build().get(null).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
