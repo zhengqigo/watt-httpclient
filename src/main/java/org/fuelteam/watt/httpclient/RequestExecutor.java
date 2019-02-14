@@ -63,24 +63,16 @@ public class RequestExecutor<T extends HttpRequestBase> {
         return this;
     }
 
-    public String string(Cookie[] cookies, String host, int port, String protocol, String username, String passwd) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(cookies).execute(t)) {
+    public String string(Cookie[] cookies, Proxy proxy) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(cookies).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
         }
     }
     
-    public String string(String host, int port, String protocol, String username, String passwd) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(null).execute(t)) {
-            return Utf8ResponseHandler.INSTANCE.handleResponse(response);
-        } finally {
-            t.releaseConnection();
-        }
-    }
-    
-    public String string(String host, int port, String protocol) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, null, null).get(null).execute(t)) {
+    public String string(Proxy proxy) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(null).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
@@ -103,16 +95,16 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
 
-    public InputStream stream(Cookie[] cookies, String host, int port, String protocol, String username, String passwd) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(cookies).execute(t)) {
+    public InputStream stream(Cookie[] cookies, Proxy proxy) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(cookies).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();
         }
     }
 
-    public InputStream stream(String host, int port, String protocol, String username, String passwd) throws Exception {
-        try (CloseableHttpResponse response = RequestClientBuilder.credentials(host, port, protocol, username, passwd).get(null).execute(t)) {
+    public InputStream stream(Proxy proxy) throws Exception {
+        try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(null).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
             t.releaseConnection();

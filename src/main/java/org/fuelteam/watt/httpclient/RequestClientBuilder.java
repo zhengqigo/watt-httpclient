@@ -97,21 +97,23 @@ public class RequestClientBuilder {
         private static final RequestClientBuilder INSTANCE = new RequestClientBuilder();
     }
 
-    public static RequestClientBuilder credentials(String host, int port, String protocol, String username, String passwd) {
-        proxy(host, port, protocol);
-        if (username == null || StringUtils.isBlank(username)) return RequestClientBuilder.Holder.INSTANCE;
+    public static RequestClientBuilder credentials(Proxy proxy) {
+        if (proxy == null) return RequestClientBuilder.Holder.INSTANCE;
+        proxy(proxy);
+        if (proxy.getUsername() == null || StringUtils.isBlank(proxy.getUsername())) return RequestClientBuilder.Holder.INSTANCE;
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         AuthScope authScope = new AuthScope(RequestClientBuilder.Holder.INSTANCE.httpHost);
-        credentialsProvider.setCredentials(authScope, new UsernamePasswordCredentials(username, passwd));
+        credentialsProvider.setCredentials(authScope, new UsernamePasswordCredentials(proxy.getUsername(), proxy.getPassword()));
         RequestClientBuilder.Holder.INSTANCE.credentialsProvider = credentialsProvider;
         return RequestClientBuilder.Holder.INSTANCE;
     }
     
-    private static RequestClientBuilder proxy(String host, int port, String protocol) {
-        if (host == null || StringUtils.isBlank(host)) return RequestClientBuilder.Holder.INSTANCE;
-        if (port <= 0) return RequestClientBuilder.Holder.INSTANCE;
-        if (protocol == null || StringUtils.isBlank(protocol)) protocol = "http";
-        HttpHost httpHost = new HttpHost(host, port, protocol);
+    private static RequestClientBuilder proxy(Proxy proxy) {
+        if (proxy == null) return RequestClientBuilder.Holder.INSTANCE;
+        if (proxy.getHost() == null || StringUtils.isBlank(proxy.getHost())) return RequestClientBuilder.Holder.INSTANCE;
+        if (proxy.getPort() <= 0) return RequestClientBuilder.Holder.INSTANCE;
+        if (proxy.getProtocol() == null || StringUtils.isBlank(proxy.getProtocol())) proxy.setProtocol("http");
+        HttpHost httpHost = new HttpHost(proxy.getHost(), proxy.getPort(), proxy.getProtocol());
         RequestClientBuilder.Holder.INSTANCE.httpHost = httpHost;
         return RequestClientBuilder.Holder.INSTANCE;
     }
