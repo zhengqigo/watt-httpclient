@@ -19,6 +19,8 @@
 
         <spring-boot.version>2.0.8.RELEASE</spring-boot.version>
         <fastjson.version>1.2.54</fastjson.version>
+        <guava.version>23.0</guava.version>
+        
         <nexus.host>106.14.212.70:8081</nexus.host>
 
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -55,6 +57,11 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>        
     </dependencies>
 
     <build>

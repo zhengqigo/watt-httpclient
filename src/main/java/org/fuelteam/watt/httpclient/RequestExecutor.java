@@ -1,7 +1,7 @@
 package org.fuelteam.watt.httpclient;
 
-import java.io.InputStream;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.Consts;
@@ -63,7 +63,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         return this;
     }
 
-    public String string(Cookie[] cookies, Proxy proxy) throws Exception {
+    public List<Object> string(Cookie[] cookies, Proxy proxy) throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(cookies).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
@@ -71,7 +71,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
     
-    public String string(Proxy proxy) throws Exception {
+    public List<Object> string(Proxy proxy) throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(null).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
@@ -79,7 +79,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
     
-    public String string(Cookie[] cookies) throws Exception {
+    public List<Object> string(Cookie[] cookies) throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
@@ -87,7 +87,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
 
-    public String string() throws Exception {
+    public List<Object> string() throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.build().get(null).execute(t)) {
             return Utf8ResponseHandler.INSTANCE.handleResponse(response);
         } finally {
@@ -95,7 +95,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
 
-    public InputStream stream(Cookie[] cookies, Proxy proxy) throws Exception {
+    public List<Object> stream(Cookie[] cookies, Proxy proxy) throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(cookies).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
@@ -103,7 +103,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
 
-    public InputStream stream(Proxy proxy) throws Exception {
+    public List<Object> stream(Proxy proxy) throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.credentials(proxy).get(null).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
@@ -111,7 +111,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
     
-    public InputStream stream(Cookie[] cookies) throws Exception {
+    public List<Object> stream(Cookie[] cookies) throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.build().get(cookies).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {
@@ -119,7 +119,7 @@ public class RequestExecutor<T extends HttpRequestBase> {
         }
     }
     
-    public InputStream stream() throws Exception {
+    public List<Object> stream() throws Exception {
         try (CloseableHttpResponse response = RequestClientBuilder.build().get(null).execute(t)) {
             return StreamResponseHandler.INSTANCE.handleResponse(response);
         } finally {

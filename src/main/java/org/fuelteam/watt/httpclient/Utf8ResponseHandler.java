@@ -1,19 +1,23 @@
 package org.fuelteam.watt.httpclient;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
+import com.google.common.collect.Lists;
 
-public class Utf8ResponseHandler implements ResponseHandler<String> {
+public class Utf8ResponseHandler implements ResponseHandler<List<Object>> {
 
-    public static final ResponseHandler<String> INSTANCE = new Utf8ResponseHandler();
+    public static final ResponseHandler<List<Object>> INSTANCE = new Utf8ResponseHandler();
 
     @Override
-    public String handleResponse(final HttpResponse response) throws IOException {
-        //final StatusLine statusLine = response.getStatusLine();
+    public List<Object> handleResponse(final HttpResponse response) throws IOException {
+        final StatusLine statusLine = response.getStatusLine();
         //final HttpEntity httpEntity = response.getEntity();
         /*
         if (statusLine.getStatusCode() >= 300) {
@@ -21,7 +25,7 @@ public class Utf8ResponseHandler implements ResponseHandler<String> {
             throw new HttpResponseException(statusLine.getStatusCode(), statusLine.getReasonPhrase());
         }
         */
-        return EntityUtils.toString(response.getEntity(), Consts.UTF_8);
+        return Lists.newArrayList(statusLine.getStatusCode(), EntityUtils.toString(response.getEntity(), Consts.UTF_8));
         //return httpEntity == null ? null : EntityUtils.toString(httpEntity, Consts.UTF_8);
     }
 }
