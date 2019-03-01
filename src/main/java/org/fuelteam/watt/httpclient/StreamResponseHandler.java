@@ -1,21 +1,19 @@
 package org.fuelteam.watt.httpclient;
 
 import java.io.IOException;
-import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ResponseHandler;
 
-import com.google.common.collect.Lists;
+public class StreamResponseHandler implements ResponseHandler<Pair<Integer, Object>> {
 
-public class StreamResponseHandler implements ResponseHandler<List<Object>> {
-
-    public static final ResponseHandler<List<Object>> INSTANCE = new StreamResponseHandler();
+    public static final ResponseHandler<Pair<Integer, Object>> INSTANCE = new StreamResponseHandler();
 
     @Override
-    public List<Object> handleResponse(final HttpResponse response) throws IOException {
+    public Pair<Integer, Object> handleResponse(final HttpResponse response) throws IOException {
         final StatusLine statusLine = response.getStatusLine();
         final HttpEntity httpEntity = response.getEntity();
         /*
@@ -24,7 +22,7 @@ public class StreamResponseHandler implements ResponseHandler<List<Object>> {
             throw new HttpResponseException(statusLine.getStatusCode(), statusLine.getReasonPhrase());
         }
         */
-        return Lists.newArrayList(statusLine.getStatusCode(), httpEntity == null ? null : httpEntity.getContent());
+        return Pair.of(statusLine.getStatusCode(), httpEntity == null ? null : httpEntity.getContent());
         //return httpEntity == null ? null : httpEntity.getContent();
     }
 }

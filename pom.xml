@@ -17,8 +17,8 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <spring-boot.version>2.0.8.RELEASE</spring-boot.version>
-        <fastjson.version>1.2.54</fastjson.version>
+        <spring-boot.version>2.1.3.RELEASE</spring-boot.version>
+        <fastjson.version>1.2.56</fastjson.version>
         <guava.version>23.0</guava.version>
         
         <nexus.host>106.14.212.70:8081</nexus.host>
