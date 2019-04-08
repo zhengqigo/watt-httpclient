@@ -21,7 +21,7 @@
         <fastjson.version>1.2.56</fastjson.version>
         <guava.version>23.0</guava.version>
         
-        <nexus.host>106.14.212.70:8081</nexus.host>
+        <nexus.host>172.16.80.40:8081</nexus.host>
 
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
