@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <spring-boot.version>2.1.5.RELEASE</spring-boot.version>
-        <fastjson.version>1.2.58</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <guava.version>23.0</guava.version>
         
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
